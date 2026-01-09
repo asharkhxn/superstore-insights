@@ -2,25 +2,25 @@
 from typing import Any, Dict, List, Optional
 
 
-# Muted, financial dashboard-style palette
+# Salesforce Lightning Design System inspired palette
 COLORS = [
-    "#4F8AF0",  # blue
-    "#34D399",  # green
-    "#F59E0B",  # amber
-    "#A78BFA",  # violet
-    "#F97316",  # orange
-    "#22C55E",  # emerald
+    "#0176d3",  # Salesforce blue
+    "#06a59a",  # Teal
+    "#b78def",  # Purple
+    "#ff6d7e",  # Pink/Coral
+    "#ffc95f",  # Yellow
+    "#3dba82",  # Green
 ]
 
-NEGATIVE_COLOR = "#F87171"  # soft red
+NEGATIVE_COLOR = "#c23934"  # Salesforce error red
 
-FONT_FAMILY = "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
+FONT_FAMILY = "'Salesforce Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
 
-# Light UI defaults (transparent backgrounds)
-_TEXT = "rgba(15,23,42,0.92)"
-_TEXT_MUTED = "rgba(51,65,85,0.82)"
-_GRID = "rgba(15,23,42,0.10)"
-_TICK = "rgba(15,23,42,0.22)"
+# Salesforce-style light UI
+_TEXT = "#181818"
+_TEXT_MUTED = "#706e6b"
+_GRID = "rgba(0,0,0,0.06)"
+_TICK = "rgba(0,0,0,0)"
 
 
 def base_layout(
@@ -31,27 +31,30 @@ def base_layout(
 ) -> Dict[str, Any]:
     """Create base layout for embedding in glass cards."""
     return {
-        "title": {"text": title, "x": 0.02, "xanchor": "left"},
+        "title": None,  # Title handled by card header in frontend
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor": "rgba(0,0,0,0)",
         "font": {"family": FONT_FAMILY, "size": 12, "color": _TEXT},
-        "margin": {"l": 56, "r": 24, "t": 54, "b": 52},
+        "margin": {"l": 65, "r": 25, "t": 40, "b": 45, "pad": 4},
         "height": height,
         "showlegend": showlegend,
         "legend": {
             "orientation": "h",
             "yanchor": "bottom",
             "y": 1.02,
-            "xanchor": "left",
-            "x": 0.0,
+            "xanchor": "center",
+            "x": 0.5,
             "bgcolor": "rgba(0,0,0,0)",
             "font": {"size": 11, "color": _TEXT_MUTED},
+            "itemsizing": "constant",
+            "tracegroupgap": 20,
         },
         "hoverlabel": {
-            "bgcolor": "rgba(255,255,255,0.98)",
-            "bordercolor": "rgba(15,23,42,0.12)",
+            "bgcolor": "white",
+            "bordercolor": "#c9c9c9",
             "font": {"family": FONT_FAMILY, "size": 12, "color": _TEXT},
         },
+        "hovermode": "x unified",
     }
 
 
@@ -63,15 +66,21 @@ def axis_style(
 ) -> Dict[str, Any]:
     """Create consistent axis styling."""
     return {
-        "title": {"text": title, "standoff": 12},
+        "title": {
+            "text": title,
+            "standoff": 16,
+            "font": {"size": 12, "color": _TEXT_MUTED},
+        },
         "showgrid": showgrid,
         "gridcolor": _GRID,
+        "gridwidth": 1,
         "zeroline": False,
         "showline": False,
-        "ticks": "outside",
+        "ticks": "",
         "tickcolor": _TICK,
-        "tickfont": {"color": _TEXT_MUTED},
+        "tickfont": {"size": 11, "color": _TEXT_MUTED},
         "tickformat": tickformat,
+        "automargin": True,
     }
 
 

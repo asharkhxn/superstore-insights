@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useFetch } from "../hooks/useFetch";
 import { FilterOptions, FilterState } from "../types/api";
 
@@ -11,22 +10,19 @@ type MultiKey = "regions" | "segments" | "categories";
 
 const formatDateInput = (value?: string) => (value ? value.slice(0, 10) : "");
 
+// Date preset options
+const datePresets = [
+  { label: "2014", start: "2014-01-01", end: "2014-12-31" },
+  { label: "2015", start: "2015-01-01", end: "2015-12-31" },
+  { label: "2016", start: "2016-01-01", end: "2016-12-31" },
+  { label: "2017", start: "2017-01-01", end: "2017-12-31" },
+  { label: "All Time", start: "2014-01-03", end: "2017-12-30" },
+];
+
 export default function FilterBar({ filters, onChange }: FilterBarProps) {
   const { data, loading, error } = useFetch<FilterOptions>(
     "/api/sales/filter-options"
   );
-
-  // Initialize defaults once options load
-  useEffect(() => {
-    if (data && (!filters.start_date || !filters.end_date)) {
-      onChange({
-        ...filters,
-        start_date: data.date_range.min,
-        end_date: data.date_range.max,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
 
   const toggleMulti = (key: MultiKey, value: string) => {
     const current = filters[key];
@@ -35,6 +31,14 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
       ? current.filter((v) => v !== value)
       : [...current, value];
     onChange({ ...filters, [key]: next });
+  };
+
+  const applyDatePreset = (start: string, end: string) => {
+    onChange({ ...filters, start_date: start, end_date: end });
+  };
+
+  const isPresetActive = (start: string, end: string) => {
+    return filters.start_date === start && filters.end_date === end;
   };
 
   const renderPills = (items: string[], key: MultiKey) => (
@@ -67,7 +71,23 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
       </div>
 
       <div className="filter-group">
-        <p className="label">Date Range</p>
+        <p className="label">Quick Select</p>
+        <div className="date-presets">
+          {datePresets.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              className={`preset-btn ${isPresetActive(preset.start, preset.end) ? "preset-active" : ""}`}
+              onClick={() => applyDatePreset(preset.start, preset.end)}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="filter-group">
+        <p className="label">Custom Date Range</p>
         <div className="date-row">
           <input
             type="date"
@@ -77,6 +97,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             onChange={(e) =>
               onChange({ ...filters, start_date: e.target.value || undefined })
             }
+            placeholder="Start date"
           />
           <span className="dash">to</span>
           <input
@@ -87,6 +108,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             onChange={(e) =>
               onChange({ ...filters, end_date: e.target.value || undefined })
             }
+            placeholder="End date"
           />
         </div>
       </div>

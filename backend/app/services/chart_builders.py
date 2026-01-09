@@ -25,6 +25,7 @@ def create_category_chart(data: List[Dict[str, Any]]) -> Dict[str, Any]:
         x=categories,
         y=sales,
         marker_color=COLORS[0],
+        marker_line_width=0,
         hovertemplate="<b>%{x}</b><br>Sales: %{y:" + y_fmt + "}<extra></extra>",
     ))
     fig.add_trace(go.Bar(
@@ -32,9 +33,14 @@ def create_category_chart(data: List[Dict[str, Any]]) -> Dict[str, Any]:
         x=categories,
         y=profit,
         marker_color=COLORS[1],
+        marker_line_width=0,
         hovertemplate="<b>%{x}</b><br>Profit: %{y:" + y_fmt + "}<extra></extra>",
     ))
-    fig.update_layout(**base_layout("Sales and Profit by Category"), barmode="group", bargap=0.22)
+    layout = base_layout("Sales and Profit by Category")
+    layout["barmode"] = "group"
+    layout["bargap"] = 0.35
+    layout["bargroupgap"] = 0.15
+    fig.update_layout(**layout)
     fig.update_xaxes(**axis_style("Category", showgrid=False))
     fig.update_yaxes(**axis_style("Amount", tickformat=y_fmt))
     return fig.to_plotly_json()
@@ -49,14 +55,21 @@ def create_region_chart(data: List[Dict[str, Any]]) -> Dict[str, Any]:
     fig = go.Figure(data=[go.Pie(
         labels=regions,
         values=sales,
-        hole=0.4,
+        hole=0.5,
         marker_colors=COLORS,
+        marker_line_width=2,
+        marker_line_color="white",
         sort=False,
         textposition="outside",
         textinfo="label+percent",
+        textfont=dict(size=11),
+        insidetextorientation="horizontal",
+        pull=[0.01] * len(regions),
         hovertemplate="<b>%{label}</b><br>Sales: %{value:" + y_fmt + "}<br>Share: %{percent}<extra></extra>",
     )])
-    fig.update_layout(**base_layout("Sales Distribution by Region"))
+    layout = base_layout("", showlegend=False)
+    layout["margin"] = {"l": 20, "r": 20, "t": 20, "b": 20}
+    fig.update_layout(**layout)
     return fig.to_plotly_json()
 
 
@@ -70,19 +83,19 @@ def create_trends_chart(data: List[Dict[str, Any]]) -> Dict[str, Any]:
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=months, y=sales, mode="lines+markers", name="Sales",
-        line=dict(color=COLORS[0], width=2.6),
-        marker=dict(size=6, color=COLORS[0]),
-        hovertemplate="<b>%{x}</b><br>Sales: %{y:" + y_fmt + "}<extra></extra>",
+        line=dict(color=COLORS[0], width=2.5, shape="spline"),
+        marker=dict(size=7, color=COLORS[0], line=dict(width=2, color="white")),
+        hovertemplate="Sales: %{y:" + y_fmt + "}<extra></extra>",
     ))
     fig.add_trace(go.Scatter(
         x=months, y=profit, mode="lines+markers", name="Profit",
-        line=dict(color=COLORS[1], width=2.2, dash="dot"),
-        marker=dict(size=6, color=COLORS[1]),
-        hovertemplate="<b>%{x}</b><br>Profit: %{y:" + y_fmt + "}<extra></extra>",
+        line=dict(color=COLORS[1], width=2.5, dash="dot", shape="spline"),
+        marker=dict(size=7, color=COLORS[1], line=dict(width=2, color="white")),
+        hovertemplate="Profit: %{y:" + y_fmt + "}<extra></extra>",
     ))
     fig.update_layout(**base_layout("Monthly Sales and Profit Trends"))
-    fig.update_xaxes(**{**axis_style("Month", showgrid=False), "tickangle": 0})
-    fig.update_yaxes(**axis_style("Amount", tickformat=y_fmt))
+    fig.update_xaxes(**{**axis_style("", showgrid=False), "tickangle": -45})
+    fig.update_yaxes(**axis_style("", tickformat=y_fmt))
     return fig.to_plotly_json()
 
 
@@ -95,12 +108,17 @@ def create_profit_chart(data: List[Dict[str, Any]]) -> Dict[str, Any]:
     x_fmt = auto_currency_tickformat(profit)
 
     fig = go.Figure(data=[go.Bar(
-        y=sub_categories, x=profit, orientation="h", marker_color=colors,
+        y=sub_categories, x=profit, orientation="h",
+        marker_color=colors,
+        marker_line_width=0,
         hovertemplate="<b>%{y}</b><br>Profit: %{x:" + x_fmt + "}<extra></extra>",
     )])
-    fig.update_layout(**base_layout("Profit by Sub-Category", height=520, showlegend=False))
+    layout = base_layout("", height=520, showlegend=False)
+    layout["bargap"] = 0.3
+    layout["margin"] = {"l": 110, "r": 25, "t": 20, "b": 45}
+    fig.update_layout(**layout)
     fig.update_xaxes(**axis_style("Profit", tickformat=x_fmt))
-    fig.update_yaxes(**axis_style("Sub-Category", showgrid=False))
+    fig.update_yaxes(**axis_style("", showgrid=False))
     return fig.to_plotly_json()
 
 
@@ -113,17 +131,23 @@ def create_segment_chart(data: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        name="Sales ($)", x=segments, y=sales, marker_color=COLORS[0], yaxis="y",
+        name="Sales ($)", x=segments, y=sales,
+        marker_color=COLORS[0],
+        marker_line_width=0,
+        yaxis="y",
         hovertemplate="<b>%{x}</b><br>Sales: %{y:" + sales_fmt + "}<extra></extra>",
     ))
     fig.add_trace(go.Scatter(
         name="Customers", x=segments, y=customers, mode="lines+markers",
-        marker_color=COLORS[2], line=dict(color=COLORS[2], width=2.2),
-        marker=dict(size=7, color=COLORS[2]), yaxis="y2",
+        line=dict(color=COLORS[2], width=3),
+        marker=dict(size=10, color=COLORS[2], line=dict(width=2, color="white")),
+        yaxis="y2",
         hovertemplate="<b>%{x}</b><br>Customers: %{y:,}<extra></extra>",
     ))
-    fig.update_layout(**base_layout("Sales and Customers by Segment"))
-    fig.update_xaxes(**axis_style("Segment", showgrid=False))
+    layout = base_layout("Sales and Customers by Segment")
+    layout["bargap"] = 0.5
+    fig.update_layout(**layout)
+    fig.update_xaxes(**axis_style("", showgrid=False))
     fig.update_layout(
         yaxis=axis_style("Sales", tickformat=sales_fmt),
         yaxis2={**axis_style("Customers", tickformat=","), "side": "right", "overlaying": "y"},
