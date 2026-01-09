@@ -112,6 +112,18 @@ class DataService:
         df = self._get_filtered_df(start_date, end_date, regions, segments, categories)
         return analytics.compute_segment_analysis(df)
 
+    def get_state_sales(
+        self,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        regions: Optional[List[str]] = None,
+        segments: Optional[List[str]] = None,
+        categories: Optional[List[str]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Get sales data by state for choropleth map."""
+        df = self._get_filtered_df(start_date, end_date, regions, segments, categories)
+        return analytics.compute_state_sales(df)
+
     def get_filter_options(self) -> Dict[str, Any]:
         """Get available filter options."""
         return analytics.compute_filter_options(self.df)

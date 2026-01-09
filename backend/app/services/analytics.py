@@ -160,3 +160,51 @@ def compute_filter_options(df: pd.DataFrame) -> Dict[str, Any]:
             "max": df["Order Date"].max().strftime("%Y-%m-%d"),
         },
     }
+
+
+def compute_state_sales(df: pd.DataFrame) -> List[Dict[str, Any]]:
+    """Compute sales aggregated by state for choropleth map.
+    
+    Args:
+        df: Filtered sales dataframe
+        
+    Returns:
+        List of state sales records with state codes
+    """
+    # State name to abbreviation mapping
+    state_abbrev = {
+        "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR",
+        "California": "CA", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE",
+        "Florida": "FL", "Georgia": "GA", "Hawaii": "HI", "Idaho": "ID",
+        "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS",
+        "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD",
+        "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS",
+        "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV",
+        "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY",
+        "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK",
+        "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC",
+        "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT",
+        "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV",
+        "Wisconsin": "WI", "Wyoming": "WY", "District of Columbia": "DC"
+    }
+    
+    grouped = df.groupby("State", observed=True).agg({
+        "Sales": "sum",
+        "Profit": "sum",
+        "Order ID": "nunique",
+    }).reset_index()
+    
+    records = []
+    for _, row in grouped.iterrows():
+        state_name = str(row["State"])
+        state_code = state_abbrev.get(state_name, "")
+        if state_code:
+            records.append({
+                "state": state_name,
+                "state_code": state_code,
+                "sales": round(float(row["Sales"]), 2),
+                "profit": round(float(row["Profit"]), 2),
+                "orders": int(row["Order ID"]),
+            })
+    
+    return records

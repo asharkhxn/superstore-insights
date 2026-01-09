@@ -31,3 +31,7 @@ class ChartService:
     def create_segment_chart(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Create a bar chart for segment analysis."""
         return chart_builders.create_segment_chart(data)
+
+    def create_choropleth_map(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Create a US choropleth map for sales by state."""
+        return chart_builders.create_choropleth_map(data)

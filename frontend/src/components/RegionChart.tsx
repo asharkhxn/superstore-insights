@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function RegionChart({ filters }: Props) {
-  const { data, loading, error, refreshing } = useFetch<
+  const { data, loading, error, refreshing, retry } = useFetch<
     ChartResponse<RegionData>
   >("/api/sales/by-region", {
     params: {
@@ -28,6 +28,7 @@ export default function RegionChart({ filters }: Props) {
           loading={loading}
           refreshing={refreshing}
           error={error}
+          onRetry={retry}
         />
       </div>
     </div>

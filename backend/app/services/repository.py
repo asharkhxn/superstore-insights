@@ -1,4 +1,5 @@
 """Data repository for loading Superstore data."""
+import logging
 from datetime import datetime, timezone
 from io import BytesIO
 from typing import Optional
@@ -6,8 +7,22 @@ from typing import Optional
 import pandas as pd
 import pyarrow as pa
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from app.core.config import get_settings
+
+logger = logging.getLogger(__name__)
+
+
+class DataLoadError(Exception):
+    """Raised when data cannot be loaded from source."""
+    pass
+
+
+class DataValidationError(Exception):
+    """Raised when data fails validation."""
+    pass
 
 
 class DataRepository:
@@ -24,6 +39,21 @@ class DataRepository:
         self._settings = get_settings()
         self._df: Optional[pd.DataFrame] = None
         self._last_refresh: Optional[datetime] = None
+        self._session = self._create_session()
+
+    def _create_session(self) -> requests.Session:
+        """Create a requests session with retry logic."""
+        session = requests.Session()
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET"],
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        return session
 
     @property
     def last_refresh(self) -> Optional[datetime]:
@@ -39,18 +69,52 @@ class DataRepository:
 
     def _load(self) -> pd.DataFrame:
         """Load data from the Arrow file."""
+        url = self._settings.data_source_url
+        logger.info(f"Loading data from {url}")
+        
         try:
-            response = requests.get(
-                self._settings.data_source_url,
+            response = self._session.get(
+                url,
                 timeout=self._settings.request_timeout_seconds,
             )
             response.raise_for_status()
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"Connection error: {e}")
+            raise DataLoadError(
+                "Unable to connect to data source. Please check your internet connection."
+            ) from e
+        except requests.exceptions.Timeout as e:
+            logger.error(f"Request timeout: {e}")
+            raise DataLoadError(
+                "Data source request timed out. Please try again later."
+            ) from e
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP error: {e}")
+            raise DataLoadError(
+                f"Data source returned an error (HTTP {response.status_code}). Please try again later."
+            ) from e
         except requests.RequestException as e:
-            raise RuntimeError(f"Failed to load data: {e}") from e
+            logger.error(f"Request error: {e}")
+            raise DataLoadError(f"Failed to load data: {e}") from e
 
-        df = self._read_arrow(BytesIO(response.content))
-        self._validate_schema(df)
+        try:
+            df = self._read_arrow(BytesIO(response.content))
+        except Exception as e:
+            logger.error(f"Failed to parse Arrow data: {e}")
+            raise DataLoadError(
+                "Failed to parse data file. The data source may be corrupted."
+            ) from e
+
+        try:
+            self._validate_schema(df)
+        except ValueError as e:
+            logger.error(f"Schema validation failed: {e}")
+            raise DataValidationError(str(e)) from e
+
         self._coerce_types(df)
+        self._clean_data(df)
+        
+        logger.info(f"Successfully loaded {len(df)} records")
         return df
 
     def _read_arrow(self, payload: BytesIO) -> pd.DataFrame:
@@ -71,7 +135,21 @@ class DataRepository:
 
     def _coerce_types(self, df: pd.DataFrame) -> None:
         """Convert columns to proper types."""
-        df["Order Date"] = pd.to_datetime(df["Order Date"])
-        df["Ship Date"] = pd.to_datetime(df["Ship Date"])
+        df["Order Date"] = pd.to_datetime(df["Order Date"], errors="coerce")
+        df["Ship Date"] = pd.to_datetime(df["Ship Date"], errors="coerce")
         for col in ["Sales", "Profit", "Quantity", "Discount"]:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    def _clean_data(self, df: pd.DataFrame) -> None:
+        """Clean and validate data values."""
+        # Fill NaN values with defaults
+        df["Sales"] = df["Sales"].fillna(0)
+        df["Profit"] = df["Profit"].fillna(0)
+        df["Quantity"] = df["Quantity"].fillna(0)
+        df["Discount"] = df["Discount"].fillna(0)
+        
+        # Remove rows with invalid dates
+        initial_count = len(df)
+        df.dropna(subset=["Order Date"], inplace=True)
+        if len(df) < initial_count:
+            logger.warning(f"Dropped {initial_count - len(df)} rows with invalid dates")

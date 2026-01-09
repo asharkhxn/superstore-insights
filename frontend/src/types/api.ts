@@ -47,8 +47,16 @@ export interface SegmentData {
   orders: number;
 }
 
+export interface StateData {
+  state: string;
+  state_code: string;
+  sales: number;
+  profit: number;
+  orders: number;
+}
+
 export interface ChartResponse<T> {
-  data: T[];
+  data: T[] | T;
   chart: PlotlyChart;
 }
 

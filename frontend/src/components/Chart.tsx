@@ -1,11 +1,13 @@
 import Plot from "react-plotly.js";
 import { PlotlyChart } from "../types/api";
+import { ApiError } from "../hooks/useFetch";
 
 interface ChartProps {
   chart: PlotlyChart;
   loading?: boolean;
   refreshing?: boolean;
-  error?: string | null;
+  error?: ApiError | null;
+  onRetry?: () => void;
 }
 
 export default function Chart({
@@ -13,13 +15,45 @@ export default function Chart({
   loading,
   refreshing,
   error,
+  onRetry,
 }: ChartProps) {
   if (loading) {
-    return <div className="loading">Loading chart...</div>;
+    return (
+      <div className="chart-loading">
+        <div className="loading-spinner"></div>
+        <p>Loading chart...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error">Error loading chart: {error}</div>;
+    return (
+      <div className="chart-error">
+        <div className="error-icon">
+          {error.type === "network"
+            ? "📡"
+            : error.type === "server"
+            ? "🖥️"
+            : "⚠️"}
+        </div>
+        <h3>
+          {error.type === "network"
+            ? "Connection Error"
+            : error.type === "server"
+            ? "Server Error"
+            : "Unable to Load Chart"}
+        </h3>
+        <p className="error-message">{error.message}</p>
+        {error.isRetryable && onRetry && (
+          <button type="button" className="retry-btn" onClick={onRetry}>
+            ↻ Try Again
+          </button>
+        )}
+        {error.code && (
+          <span className="error-code">Error Code: {error.code}</span>
+        )}
+      </div>
+    );
   }
 
   if (!chart || !chart.data) {

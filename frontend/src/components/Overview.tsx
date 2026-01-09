@@ -1,4 +1,4 @@
-import { useFetch } from "../hooks/useFetch";
+import { useFetch, ApiError } from "../hooks/useFetch";
 import { FilterState, OverviewMetrics } from "../types/api";
 import MetricCard from "./MetricCard";
 
@@ -6,8 +6,58 @@ interface Props {
   filters: FilterState;
 }
 
+function OverviewError({
+  error,
+  onRetry,
+}: {
+  error: ApiError;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="overview-error">
+      <div className="error-content">
+        <span className="error-icon">
+          {error.type === "network"
+            ? "📡"
+            : error.type === "server"
+            ? "🖥️"
+            : "⚠️"}
+        </span>
+        <div className="error-details">
+          <h3>
+            {error.type === "network"
+              ? "Connection Error"
+              : error.type === "server"
+              ? "Server Error"
+              : "Unable to Load Metrics"}
+          </h3>
+          <p>{error.message}</p>
+        </div>
+        {error.isRetryable && (
+          <button type="button" className="retry-btn" onClick={onRetry}>
+            ↻ Retry
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OverviewLoading() {
+  return (
+    <div className="dashboard-grid">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="metric-card skeleton">
+          <div className="skeleton-title"></div>
+          <div className="skeleton-value"></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Overview({ filters }: Props) {
-  const { data, loading, error } = useFetch<OverviewMetrics>(
+  const { data, loading, error, retry } = useFetch<OverviewMetrics>(
     "/api/sales/overview",
     {
       params: {
@@ -21,11 +71,11 @@ export default function Overview({ filters }: Props) {
   );
 
   if (loading) {
-    return <div className="loading">Loading overview metrics...</div>;
+    return <OverviewLoading />;
   }
 
   if (error) {
-    return <div className="error">Error loading overview: {error}</div>;
+    return <OverviewError error={error} onRetry={retry} />;
   }
 
   if (!data) {

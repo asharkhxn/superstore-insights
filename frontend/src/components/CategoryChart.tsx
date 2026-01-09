@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function CategoryChart({ filters }: Props) {
-  const { data, loading, error, refreshing } = useFetch<
+  const { data, loading, error, refreshing, retry } = useFetch<
     ChartResponse<CategoryData>
   >("/api/sales/by-category", {
     params: {
@@ -28,6 +28,7 @@ export default function CategoryChart({ filters }: Props) {
           loading={loading}
           refreshing={refreshing}
           error={error}
+          onRetry={retry}
         />
       </div>
     </div>

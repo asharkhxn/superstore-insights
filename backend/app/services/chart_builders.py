@@ -153,3 +153,63 @@ def create_segment_chart(data: List[Dict[str, Any]]) -> Dict[str, Any]:
         yaxis2={**axis_style("Customers", tickformat=","), "side": "right", "overlaying": "y"},
     )
     return fig.to_plotly_json()
+
+
+def create_choropleth_map(data: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Create a US choropleth map for sales by state."""
+    states = [d["state_code"] for d in data]
+    state_names = [d["state"] for d in data]
+    sales = [d["sales"] for d in data]
+    profit = [d["profit"] for d in data]
+    orders = [d["orders"] for d in data]
+    
+    fig = go.Figure(data=go.Choropleth(
+        locations=states,
+        z=sales,
+        locationmode="USA-states",
+        colorscale=[
+            [0, "#e8f5e9"],
+            [0.2, "#a5d6a7"],
+            [0.4, "#66bb6a"],
+            [0.6, "#43a047"],
+            [0.8, "#2e7d32"],
+            [1, "#1b5e20"]
+        ],
+        colorbar=dict(
+            title=dict(text="Sales ($)", font=dict(size=12)),
+            tickformat="$,.0f",
+            len=0.6,
+            thickness=15,
+            x=1.0,
+        ),
+        marker_line_color="white",
+        marker_line_width=1.5,
+        customdata=list(zip(state_names, profit, orders)),
+        hovertemplate=(
+            "<b>%{customdata[0]}</b><br>"
+            "Sales: $%{z:,.0f}<br>"
+            "Profit: $%{customdata[1]:,.0f}<br>"
+            "Orders: %{customdata[2]:,}<extra></extra>"
+        ),
+    ))
+    
+    fig.update_layout(
+        geo=dict(
+            scope="usa",
+            bgcolor="rgba(248,250,252,0.95)",
+            lakecolor="rgba(200,230,255,0.5)",
+            landcolor="rgba(243,244,246,1)",
+            showlakes=True,
+            showland=True,
+            subunitcolor="white",
+            subunitwidth=1,
+            projection=dict(type="albers usa"),
+            fitbounds="locations",
+        ),
+        margin=dict(l=0, r=0, t=10, b=0),
+        paper_bgcolor="white",
+        font=dict(family="Inter, system-ui, sans-serif", size=11, color="#181818"),
+        autosize=True,
+    )
+    
+    return fig.to_plotly_json()

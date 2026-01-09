@@ -51,6 +51,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             key={item}
             className={`pill ${selected ? "pill-active" : ""}`}
             onClick={() => toggleMulti(key, item)}
+            title={selected ? `Remove ${item} filter` : `Filter by ${item}`}
           >
             {item}
           </button>
@@ -61,84 +62,100 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
 
   return (
     <div className="filter-bar">
-      <div className="filter-header">
-        {loading && <span className="badge">Loading…</span>}
-        {error && (
-          <span className="badge" style={{ background: "#ef4444" }}>
-            {error}
-          </span>
-        )}
-      </div>
+      {/* Top Row: Date Controls */}
+      <div className="filter-row filter-row-dates">
+        <div className="filter-group">
+          <p className="label">Quick Select</p>
+          <div className="date-presets">
+            {datePresets.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                className={`preset-btn ${
+                  isPresetActive(preset.start, preset.end) ? "preset-active" : ""
+                }`}
+                onClick={() => applyDatePreset(preset.start, preset.end)}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <div className="filter-group">
-        <p className="label">Quick Select</p>
-        <div className="date-presets">
-          {datePresets.map((preset) => (
-            <button
-              key={preset.label}
-              type="button"
-              className={`preset-btn ${isPresetActive(preset.start, preset.end) ? "preset-active" : ""}`}
-              onClick={() => applyDatePreset(preset.start, preset.end)}
-            >
-              {preset.label}
-            </button>
-          ))}
+        <div className="filter-divider" />
+
+        <div className="filter-group">
+          <p className="label">Custom Range</p>
+          <div className="date-row">
+            <input
+              type="date"
+              value={formatDateInput(filters.start_date)}
+              min={data?.date_range.min}
+              max={filters.end_date || data?.date_range.max}
+              onChange={(e) =>
+                onChange({ ...filters, start_date: e.target.value || undefined })
+              }
+              placeholder="Start date"
+            />
+            <span className="dash">to</span>
+            <input
+              type="date"
+              value={formatDateInput(filters.end_date)}
+              min={filters.start_date || data?.date_range.min}
+              max={data?.date_range.max}
+              onChange={(e) =>
+                onChange({ ...filters, end_date: e.target.value || undefined })
+              }
+              placeholder="End date"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="filter-group">
-        <p className="label">Custom Date Range</p>
-        <div className="date-row">
-          <input
-            type="date"
-            value={formatDateInput(filters.start_date)}
-            min={data?.date_range.min}
-            max={filters.end_date || data?.date_range.max}
-            onChange={(e) =>
-              onChange({ ...filters, start_date: e.target.value || undefined })
-            }
-            placeholder="Start date"
-          />
-          <span className="dash">to</span>
-          <input
-            type="date"
-            value={formatDateInput(filters.end_date)}
-            min={filters.start_date || data?.date_range.min}
-            max={data?.date_range.max}
-            onChange={(e) =>
-              onChange({ ...filters, end_date: e.target.value || undefined })
-            }
-            placeholder="End date"
-          />
+      {/* Bottom Row: Dimension Filters */}
+      <div className="filter-row filter-row-dimensions">
+        <div className="filter-group">
+          <p className="label">Regions</p>
+          {data ? (
+            renderPills(data.regions, "regions")
+          ) : (
+            <div className="skeleton" />
+          )}
+        </div>
+
+        <div className="filter-divider" />
+
+        <div className="filter-group">
+          <p className="label">Segments</p>
+          {data ? (
+            renderPills(data.segments, "segments")
+          ) : (
+            <div className="skeleton" />
+          )}
+        </div>
+
+        <div className="filter-divider" />
+
+        <div className="filter-group">
+          <p className="label">Categories</p>
+          {data ? (
+            renderPills(data.categories, "categories")
+          ) : (
+            <div className="skeleton" />
+          )}
         </div>
       </div>
 
-      <div className="filter-group">
-        <p className="label">Regions</p>
-        {data ? (
-          renderPills(data.regions, "regions")
-        ) : (
-          <div className="skeleton" />
-        )}
-      </div>
-
-      <div className="filter-group">
-        <p className="label">Segments</p>
-        {data ? (
-          renderPills(data.segments, "segments")
-        ) : (
-          <div className="skeleton" />
-        )}
-      </div>
-
-      <div className="filter-group">
-        <p className="label">Categories</p>
-        {data ? (
-          renderPills(data.categories, "categories")
-        ) : (
-          <div className="skeleton" />
-        )}
-      </div>
+      {loading && (
+        <div className="filter-loading">
+          Loading filters...
+        </div>
+      )}
+      {error && (
+        <div className="filter-error">
+          {error.message}
+        </div>
+      )}
     </div>
   );
 }
