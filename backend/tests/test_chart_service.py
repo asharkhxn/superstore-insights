@@ -1,9 +1,8 @@
 """Tests for the chart service."""
 import pytest
-from unittest.mock import MagicMock, patch
 
 from app.services.chart_service import ChartService
-from app.services.data_service import DataService
+from app.services.chart_styles import COLORS
 
 
 class TestChartServiceInit:
@@ -14,11 +13,9 @@ class TestChartServiceInit:
         chart_service = ChartService(mock_data_service)
         assert chart_service.data_service == mock_data_service
 
-    def test_chart_service_has_colors(self, mock_data_service):
-        """Test that ChartService has color palette."""
-        chart_service = ChartService(mock_data_service)
-        assert hasattr(chart_service, 'COLORS')
-        assert len(chart_service.COLORS) > 0
+    def test_chart_colors_exist(self):
+        """Test that chart color palette exists."""
+        assert len(COLORS) > 0
 
 
 class TestCategoryChart:

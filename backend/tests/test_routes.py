@@ -1,8 +1,9 @@
 """Tests for the sales API routes."""
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from app.services.data_service import DataService
+from app.core.dependencies import get_data_service, get_chart_service
 
 
 class TestSalesOverviewEndpoint:
@@ -10,17 +11,17 @@ class TestSalesOverviewEndpoint:
 
     def test_overview_returns_200(self, client, mock_data_service):
         """Test that overview endpoint returns 200."""
-        with patch('app.routes.sales.data_service', mock_data_service):
+        with patch("app.core.dependencies.get_data_service", return_value=mock_data_service):
             response = client.get("/api/sales/overview")
             assert response.status_code == 200
 
     def test_overview_returns_metrics(self, client, mock_data_service):
         """Test that overview returns metrics data."""
-        with patch('app.routes.sales.data_service', mock_data_service):
+        with patch("app.core.dependencies.get_data_service", return_value=mock_data_service):
             response = client.get("/api/sales/overview")
             data = response.json()
-            assert 'total_sales' in data
-            assert 'total_profit' in data
+            assert "total_sales" in data
+            assert "total_profit" in data
 
 
 class TestSalesByCategoryEndpoint:
@@ -28,21 +29,21 @@ class TestSalesByCategoryEndpoint:
 
     def test_category_returns_200(self, client, mock_data_service):
         """Test that category endpoint returns 200."""
-        with patch('app.routes.sales.data_service', mock_data_service):
-            with patch('app.routes.sales.chart_service') as mock_chart:
-                mock_chart.create_category_chart.return_value = {'data': [], 'layout': {}}
+        with patch("app.core.dependencies.get_data_service", return_value=mock_data_service):
+            with patch("app.routers.sales.get_chart_service") as mock_chart:
+                mock_chart.return_value.create_category_chart.return_value = {"data": [], "layout": {}}
                 response = client.get("/api/sales/by-category")
                 assert response.status_code == 200
 
     def test_category_returns_data_and_chart(self, client, mock_data_service):
         """Test that category returns both data and chart."""
-        with patch('app.routes.sales.data_service', mock_data_service):
-            with patch('app.routes.sales.chart_service') as mock_chart:
-                mock_chart.create_category_chart.return_value = {'data': [], 'layout': {}}
+        with patch("app.core.dependencies.get_data_service", return_value=mock_data_service):
+            with patch("app.routers.sales.get_chart_service") as mock_chart:
+                mock_chart.return_value.create_category_chart.return_value = {"data": [], "layout": {}}
                 response = client.get("/api/sales/by-category")
                 data = response.json()
-                assert 'data' in data
-                assert 'chart' in data
+                assert "data" in data
+                assert "chart" in data
 
 
 class TestSalesByRegionEndpoint:
@@ -50,9 +51,9 @@ class TestSalesByRegionEndpoint:
 
     def test_region_returns_200(self, client, mock_data_service):
         """Test that region endpoint returns 200."""
-        with patch('app.routes.sales.data_service', mock_data_service):
-            with patch('app.routes.sales.chart_service') as mock_chart:
-                mock_chart.create_region_chart.return_value = {'data': [], 'layout': {}}
+        with patch("app.core.dependencies.get_data_service", return_value=mock_data_service):
+            with patch("app.routers.sales.get_chart_service") as mock_chart:
+                mock_chart.return_value.create_region_chart.return_value = {"data": [], "layout": {}}
                 response = client.get("/api/sales/by-region")
                 assert response.status_code == 200
 
@@ -62,9 +63,9 @@ class TestSalesTrendsEndpoint:
 
     def test_trends_returns_200(self, client, mock_data_service):
         """Test that trends endpoint returns 200."""
-        with patch('app.routes.sales.data_service', mock_data_service):
-            with patch('app.routes.sales.chart_service') as mock_chart:
-                mock_chart.create_trends_chart.return_value = {'data': [], 'layout': {}}
+        with patch("app.core.dependencies.get_data_service", return_value=mock_data_service):
+            with patch("app.routers.sales.get_chart_service") as mock_chart:
+                mock_chart.return_value.create_trends_chart.return_value = {"data": [], "layout": {}}
                 response = client.get("/api/sales/trends")
                 assert response.status_code == 200
 
@@ -74,9 +75,9 @@ class TestProfitAnalysisEndpoint:
 
     def test_profit_returns_200(self, client, mock_data_service):
         """Test that profit analysis endpoint returns 200."""
-        with patch('app.routes.sales.data_service', mock_data_service):
-            with patch('app.routes.sales.chart_service') as mock_chart:
-                mock_chart.create_profit_chart.return_value = {'data': [], 'layout': {}}
+        with patch("app.core.dependencies.get_data_service", return_value=mock_data_service):
+            with patch("app.routers.sales.get_chart_service") as mock_chart:
+                mock_chart.return_value.create_profit_chart.return_value = {"data": [], "layout": {}}
                 response = client.get("/api/sales/profit-analysis")
                 assert response.status_code == 200
 
@@ -86,8 +87,8 @@ class TestSegmentAnalysisEndpoint:
 
     def test_segment_returns_200(self, client, mock_data_service):
         """Test that segment analysis endpoint returns 200."""
-        with patch('app.routes.sales.data_service', mock_data_service):
-            with patch('app.routes.sales.chart_service') as mock_chart:
-                mock_chart.create_segment_chart.return_value = {'data': [], 'layout': {}}
+        with patch("app.core.dependencies.get_data_service", return_value=mock_data_service):
+            with patch("app.routers.sales.get_chart_service") as mock_chart:
+                mock_chart.return_value.create_segment_chart.return_value = {"data": [], "layout": {}}
                 response = client.get("/api/sales/segment-analysis")
                 assert response.status_code == 200

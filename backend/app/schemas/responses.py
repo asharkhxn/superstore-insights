@@ -1,16 +1,19 @@
-"""Pydantic models for API responses."""
+"""Pydantic response models for the API."""
+from typing import Any, Dict, List
+
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
 
 
 class HealthResponse(BaseModel):
     """Health check response."""
+
     status: str
     message: str
 
 
 class OverviewMetrics(BaseModel):
     """Overview metrics response."""
+
     total_sales: float
     total_profit: float
     total_orders: int
@@ -21,6 +24,7 @@ class OverviewMetrics(BaseModel):
 
 class CategoryData(BaseModel):
     """Category sales data."""
+
     category: str
     sales: float
     profit: float
@@ -30,6 +34,7 @@ class CategoryData(BaseModel):
 
 class RegionData(BaseModel):
     """Region sales data."""
+
     region: str
     sales: float
     profit: float
@@ -39,6 +44,7 @@ class RegionData(BaseModel):
 
 class TrendData(BaseModel):
     """Monthly trend data."""
+
     month: str
     sales: float
     profit: float
@@ -47,6 +53,7 @@ class TrendData(BaseModel):
 
 class ProfitData(BaseModel):
     """Profit analysis data."""
+
     category: str
     sub_category: str
     sales: float
@@ -57,6 +64,7 @@ class ProfitData(BaseModel):
 
 class SegmentData(BaseModel):
     """Segment analysis data."""
+
     segment: str
     sales: float
     profit: float
@@ -66,5 +74,22 @@ class SegmentData(BaseModel):
 
 class ChartResponse(BaseModel):
     """Response with data and chart configuration."""
+
     data: List[Dict[str, Any]]
     chart: Dict[str, Any]
+
+
+class DateRange(BaseModel):
+    """Date range for filter options."""
+
+    min: str
+    max: str
+
+
+class FilterOptions(BaseModel):
+    """Available filter options."""
+
+    regions: List[str]
+    segments: List[str]
+    categories: List[str]
+    date_range: DateRange

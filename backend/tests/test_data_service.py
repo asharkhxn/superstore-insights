@@ -1,27 +1,24 @@
 """Tests for the data service."""
 import pytest
-import pandas as pd
-from datetime import datetime
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 
 from app.services.data_service import DataService
+from app.services.repository import DataRepository
 
 
 class TestDataServiceInit:
     """Tests for DataService initialization."""
 
-    def test_data_service_init_no_df(self):
+    def test_data_service_init_no_df(self, mock_repository):
         """Test that DataService initializes without loading data."""
-        with patch.object(DataService, '_load_data'):
-            service = DataService()
-            assert service._df is None
+        service = DataService(repository=mock_repository)
+        assert service._df is None
 
-    def test_data_service_lazy_loads(self, sample_dataframe):
+    def test_data_service_lazy_loads(self, sample_dataframe, mock_repository):
         """Test that DataService lazy loads data on access."""
-        with patch.object(DataService, '_load_data', return_value=sample_dataframe) as mock_load:
-            service = DataService()
-            _ = service.df
-            mock_load.assert_called_once()
+        service = DataService(repository=mock_repository)
+        _ = service.df
+        mock_repository.get_dataframe.assert_called_once()
 
 
 class TestOverviewMetrics:
