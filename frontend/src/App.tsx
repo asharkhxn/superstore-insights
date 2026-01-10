@@ -112,14 +112,38 @@ function App() {
       <header className="header">
         <div className="header-left">
           <div className="logo">
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="32" height="32" rx="8" fill="url(#logo-gradient)"/>
-              <path d="M8 16L12 12L16 16L20 12L24 16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M8 20L12 16L16 20L20 16L24 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"/>
+            <svg
+              viewBox="0 0 32 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
+              <path
+                d="M8 16L12 12L16 16L20 12L24 16"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M8 20L12 16L16 20L20 16L24 20"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.6"
+              />
               <defs>
-                <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#0176d3"/>
-                  <stop offset="1" stopColor="#032d60"/>
+                <linearGradient
+                  id="logo-gradient"
+                  x1="0"
+                  y1="0"
+                  x2="32"
+                  y2="32"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stopColor="#0176d3" />
+                  <stop offset="1" stopColor="#032d60" />
                 </linearGradient>
               </defs>
             </svg>

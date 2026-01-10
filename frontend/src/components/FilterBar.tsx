@@ -72,7 +72,9 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
                 key={preset.label}
                 type="button"
                 className={`preset-btn ${
-                  isPresetActive(preset.start, preset.end) ? "preset-active" : ""
+                  isPresetActive(preset.start, preset.end)
+                    ? "preset-active"
+                    : ""
                 }`}
                 onClick={() => applyDatePreset(preset.start, preset.end)}
               >
@@ -93,7 +95,10 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
               min={data?.date_range.min}
               max={filters.end_date || data?.date_range.max}
               onChange={(e) =>
-                onChange({ ...filters, start_date: e.target.value || undefined })
+                onChange({
+                  ...filters,
+                  start_date: e.target.value || undefined,
+                })
               }
               placeholder="Start date"
             />
@@ -146,16 +151,8 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
         </div>
       </div>
 
-      {loading && (
-        <div className="filter-loading">
-          Loading filters...
-        </div>
-      )}
-      {error && (
-        <div className="filter-error">
-          {error.message}
-        </div>
-      )}
+      {loading && <div className="filter-loading">Loading filters...</div>}
+      {error && <div className="filter-error">{error.message}</div>}
     </div>
   );
 }
